@@ -80,6 +80,21 @@ const Page = () => {
       `}</style>
       <Navbar />
 
+      <div className='h-[100vh] bg-red-600 flex flex-col items-center justify-center text-center'>
+        <h1 className='font-coign uppercase text-white whitespace-pre-line leading-[0.8] tracking-[-0.015em] text-[38vw] md:text-[22vw] lg:text-[18vw] font-bold'>Social Lifts</h1>
+        
+        {/* Enhanced scroll indicator */}
+        <div className='absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center'>
+          <p 
+            className='text-white/70 text-sm mb-2 bounce-animation'
+            style={{ opacity: scrollOpacity, transition: 'opacity 0.3s ease-out' }}
+          >
+            Scroll Down
+          </p>
+          <div className='w-px h-8 bg-white/30 pulse-animation'></div>
+        </div>
+      </div>
+
       <div className='absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center'>
           <p 
             className='text-white/70 text-sm mb-2 bounce-animation'
