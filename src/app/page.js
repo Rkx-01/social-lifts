@@ -245,7 +245,7 @@ const Page = () => {
           <div className='text-left will-change-transform' ref={whyUsTitleRef} style={{ transform: `translate3d(0, ${whyUsShiftY}px, 0)`, transition: 'transform 50ms linear' }}>
             <h2 className='font-coign uppercase text-black leading-[0.8] tracking-[-0.02em] text-[32vw] md:text-[20vw] lg:text-[16vw]'>why</h2>
             <div className='-mt-6'>
-              <h2 className='font-coign uppercase text-black leading-[0.8] tracking-[-0.02em] text-[32vw] md:text-[20vw] lg:text-[16vw]'>lifts?</h2>
+              <h2 className='font-coign uppercase text-black leading-[0.8] tracking-[-0.02em] text-[32vw] md:text-[20vw] lg:text-[16vw]'>US?</h2>
             </div>
           </div>
 
