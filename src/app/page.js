@@ -387,9 +387,9 @@ const Page = () => {
         />
             <div className='relative max-w-6xl mx-auto px-6 md:px-8 lg:px-10'>
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-20 md:gap-y-24'>
-            <AnimatedStat number='12+' caption='Years Experience' />
-            <AnimatedStat number='50+' caption='Brands Transformed' />
-            <AnimatedStat number='14' caption='Categories Disrupted' />
+            <AnimatedStat number='3+' caption='Years Experience' />
+            <AnimatedStat number='11+' caption='Brands Transformed' />
+            <AnimatedStat number='5+' caption='Categories Disrupted' />
             <AnimatedStat number='7+' caption='Countries Reached' />
             <AnimatedStat number='70%' caption='Repeat Clients' />
             <AnimatedStat number='3' caption='In-house Brands' />
