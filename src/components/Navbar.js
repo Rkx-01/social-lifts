@@ -5,7 +5,7 @@ import { TiLocationArrow } from "react-icons/ti";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import gsap from "gsap";
-import Lenis from "lenis"; // Add Lenis for smooth scrolling
+// Removed global Lenis to avoid duplicate RAF loops and scroll conflicts
 
 import Button from "./Button"; // keep your custom Button
 
@@ -26,30 +26,7 @@ const Navbar = () => {
   const [isIndicatorActive, setIndicatorActive] = useState(false);
   const [currentScrollY, setCurrentScrollY] = useState(0);
 
-  // Add Lenis smooth scroll on mount (window scroll for all pages)
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 2,
-      infinite: false,
-      wheelMultiplier: 1,
-      lerp: 0.1,
-      syncTouch: true,
-      syncTouchLerp: 0.075,
-    });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
+  // Removed global Lenis setup; page-level or component-level smooth scrolling will manage their own contexts
 
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
@@ -97,7 +74,7 @@ const Navbar = () => {
   const navClasses = `
     fixed inset-x-0 top-4 z-50 h-16 border-none 
     transition-all duration-500 sm:inset-x-6 
-    ${currentScrollY > 0 && isNavVisible ? "bg-black rounded-2xl" : ""}
+    bg-black rounded-2xl shadow-md
   `;
 
   // correct nav links
@@ -124,14 +101,6 @@ const Navbar = () => {
               <img src="/img/logo.png" alt="logo" className="w-10" />
             </Link>
 
-            <Button
-              id="products-button"
-              title="Contact"
-              href="/contact"
-              target="_blank"
-              rightIcon={<TiLocationArrow />}
-              containerClass="bg-blue-50 md:flex hidden items-center justify-center gap-1"
-            />
           </div>
 
           {/* Nav Links + Audio */}
@@ -139,14 +108,22 @@ const Navbar = () => {
             <div className="hidden md:block">
               {navItems.map((item) => (
                 <Link
-                  key={typeof item === "string" ? item : item.label}
-                  href={getNavLink(item)}
-                  className="nav-hover-btn"
+                key={typeof item === "string" ? item : item.label}
+                href={getNavLink(item)}
+                className="nav-hover-btn"
                 >
                   {typeof item === "string" ? item : item.label}
                 </Link>
               ))}
             </div>
+              <Button
+                id="products-button"
+                title="Contact"
+                href="/contact"
+                target="_blank"
+                rightIcon={<TiLocationArrow />}
+                containerClass="bg-white text-black md:flex hidden items-center justify-center gap-1"
+              />
 
             <button
               className="ml-10 flex items-center space-x-0.5"
