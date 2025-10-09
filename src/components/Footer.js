@@ -77,8 +77,8 @@ const Footer = () => {
               />
               <nav className='relative text-[13px] leading-relaxed tracking-wide space-y-3 px-6 py-5'>
                 <Link href='/contact' className='block hover:opacity-80 hover:underline underline-offset-4'>Contact</Link>
-                <span className='block opacity-90'>Fetus</span>
-                <a href='https://instagram.com' target='_blank' rel='noreferrer' className='block hover:opacity-80 hover:underline underline-offset-4'>Instagram</a>
+                {/* <span className='block opacity-90'>Fetus</span> */}
+                {/* <a href='https://instagram.com' target='_blank' rel='noreferrer' className='block hover:opacity-80 hover:underline underline-offset-4'>Instagram</a> */}
               </nav>
             </div>
             {/* Info */}

@@ -6,11 +6,12 @@ import Footer from './Footer';
 // Inline ScrollStack components so cards live in the same file
 const ScrollStackItem = ({ children, itemClassName = '' }) => (
     <div
-      className={`scroll-stack-card relative w-full h-80 my-8 p-12 rounded-[40px] shadow-[0_0_30px_rgba(0,0,0,0.1)] box-border origin-top will-change-transform bg-[oklch(1_0_0)] ${itemClassName}`.trim()}
+      className={`scroll-stack-card relative w-full h-auto min-h-[280px] my-8 p-12 rounded-[40px] shadow-[0_0_40px_rgba(0,0,0,0.08)] box-border origin-top will-change-transform bg-[oklch(1_0_0)] border border-[oklch(0.95_0.005_95)] ${itemClassName}`.trim()}
       style={{
         backfaceVisibility: 'hidden',
         transformStyle: 'preserve-3d',
-        opacity: 1
+        opacity: 1,
+        transition: 'transform 0.5s ease-out, box-shadow 0.3s ease-out'
       }}>
       {children}
     </div>
@@ -19,14 +20,14 @@ const ScrollStackItem = ({ children, itemClassName = '' }) => (
 const ScrollStack = ({
   children,
   className = '',
-  itemDistance = 100,
-  itemScale = 0.03,
-  itemStackDistance = 30,
-  stackPosition = '20%',
-  scaleEndPosition = '10%',
-  baseScale = 0.85,
+  itemDistance = 120,
+  itemScale = 0.02,
+  itemStackDistance = 25,
+  stackPosition = '25%',
+  scaleEndPosition = '15%',
+  baseScale = 0.88,
   rotationAmount = 0,
-  blurAmount = 0,
+  blurAmount = 0.5,
   useWindowScroll = false,
   onStackComplete
 }) => {
@@ -103,8 +104,10 @@ const ScrollStack = ({
 
       const scaleProgress = calculateProgress(scrollTop, triggerStart, triggerEnd);
       const targetScale = baseScale + i * itemScale;
-      const scale = 1 - scaleProgress * (1 - targetScale);
-      const rotation = rotationAmount ? i * rotationAmount * scaleProgress : 0;
+      // Enhanced easing for smoother scaling
+      const easedProgress = 1 - Math.pow(1 - scaleProgress, 3);
+      const scale = 1 - easedProgress * (1 - targetScale);
+      const rotation = rotationAmount ? i * rotationAmount * easedProgress : 0;
 
       let blur = 0;
       if (blurAmount) {
@@ -119,7 +122,8 @@ const ScrollStack = ({
 
         if (i < topCardIndex) {
           const depthInStack = topCardIndex - i;
-          blur = Math.max(0, depthInStack * blurAmount);
+          // Enhanced blur with exponential falloff for more natural depth
+          blur = Math.max(0, depthInStack * blurAmount * Math.pow(0.8, depthInStack));
         }
       }
 
@@ -134,7 +138,7 @@ const ScrollStack = ({
 
       const newTransform = {
         translateY: Math.round(translateY * 100) / 100,
-        scale: Math.round(scale * 1000) / 1000,
+        scale: Math.round(scale * 10000) / 10000,
         rotation: Math.round(rotation * 100) / 100,
         blur: Math.round(blur * 100) / 100
       };
@@ -142,10 +146,10 @@ const ScrollStack = ({
       const lastTransform = lastTransformsRef.current.get(i);
       const hasChanged =
         !lastTransform ||
-        Math.abs(lastTransform.translateY - newTransform.translateY) > 0.1 ||
-        Math.abs(lastTransform.scale - newTransform.scale) > 0.001 ||
-        Math.abs(lastTransform.rotation - newTransform.rotation) > 0.1 ||
-        Math.abs(lastTransform.blur - newTransform.blur) > 0.1;
+        Math.abs(lastTransform.translateY - newTransform.translateY) > 0.05 ||
+        Math.abs(lastTransform.scale - newTransform.scale) > 0.0001 ||
+        Math.abs(lastTransform.rotation - newTransform.rotation) > 0.05 ||
+        Math.abs(lastTransform.blur - newTransform.blur) > 0.05;
 
       if (hasChanged) {
         const transform = `translate3d(0, ${newTransform.translateY}px, 0) scale(${newTransform.scale}) rotate(${newTransform.rotation}deg)`;
@@ -153,6 +157,11 @@ const ScrollStack = ({
 
         card.style.transform = transform;
         card.style.filter = filter;
+        
+        // Add subtle shadow enhancement based on stack position
+        const shadowIntensity = Math.max(0.08, 0.08 - (i * 0.01));
+        const shadowBlur = Math.max(30, 40 - (i * 2));
+        card.style.boxShadow = `0 0 ${shadowBlur}px rgba(0,0,0,${shadowIntensity})`;
 
         lastTransformsRef.current.set(i, newTransform);
       }
@@ -195,12 +204,12 @@ const ScrollStack = ({
         duration: 1.2,
         easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 2.5,
         infinite: false,
-        wheelMultiplier: 1,
+        wheelMultiplier: 1.5,
         lerp: 0.1,
         syncTouch: true,
-        syncTouchLerp: 0.075
+        syncTouchLerp: 0.05
       });
 
       lenis.on('scroll', handleScroll);
@@ -220,15 +229,15 @@ const ScrollStack = ({
       const lenis = new Lenis({
         wrapper: scroller,
         content: scroller.querySelector('.scroll-stack-inner'),
-        duration: 1.2,
+        duration: 1.4,
         easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 2.5,
         infinite: false,
-        wheelMultiplier: 1,
-        lerp: 0.1,
+        wheelMultiplier: 1.2,
+        lerp: 0.08,
         syncTouch: true,
-        syncTouchLerp: 0.075
+        syncTouchLerp: 0.05
       });
 
       lenis.on('scroll', handleScroll);
@@ -329,9 +338,26 @@ const ScrollStack = ({
         .hide-scrollbar::-webkit-scrollbar {
           display: none; /* Chrome, Safari, Opera */
         }
+        .scroll-stack-card {
+          will-change: transform, filter;
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          perspective: 1000px;
+          -webkit-perspective: 1000px;
+          transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease-out;
+        }
+        .scroll-stack-card:hover {
+          box-shadow: 0 0 50px rgba(0,0,0,0.12) !important;
+          transform: translateY(-5px) translateZ(0);
+        }
+        body {
+          scroll-behavior: smooth;
+        }
       `}</style>
       <div className={containerClassName} ref={scrollerRef} style={containerStyles}>
-        <div className="scroll-stack-inner pt-[20vh] px-20 pb-[50rem] min-h-screen">
+        <div className="scroll-stack-inner pt-[25vh] px-20 pb-[60rem] min-h-screen">
           {children}
           <div className="scroll-stack-end w-full h-px" />
         </div>
@@ -379,7 +405,7 @@ const AboutComp = () => {
                 <div className='max-w-3xl ml-auto pr-8 md:pr-16'>
                     <div className='space-y-6'>
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
-                            At Social Lifts, we believe growth shouldn&#39;;t be chaotic. That&#39;;s why we built a full-funnel creative and growth team under one roof—video editors, designers, social media strategists, web developers, and SEO experts all working as one seamless engine.
+                            At Social Lifts, we believe growth shouldn&#39;t be chaotic. That&#39;s why we built a full-funnel creative and growth team under one roof—video editors, designers, social media strategists, web developers, and SEO experts all working as one seamless engine.
                         </p>
                         
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
@@ -387,7 +413,7 @@ const AboutComp = () => {
                         </p>
                         
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
-                            We craft creative that stops the scroll—cinematic edits, bold visuals, and platform-native content designed for today&#39;;s fast-moving algorithms. With benefit-first messaging and engaging narratives, we don&#39;;t just get attention, we keep it.
+                            We craft creative that stops the scroll—cinematic edits, bold visuals, and platform-native content designed for today&#39;s fast-moving algorithms. With benefit-first messaging and engaging narratives, we don&#39;t just get attention, we keep it.
                         </p>
                         
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
@@ -397,18 +423,12 @@ const AboutComp = () => {
                 </div>
             </div>
 
-            {/* Place the stack in a fixed-height container so the stack scrolls internally, not with the page */}
+            {/* Card stack that responds to global window scrolling */}
             <div
-              className="w-full max-w-8xl mx-auto my-24 hide-scrollbar"
-              style={{
-                height: "600px",
-                overflowY: "auto",
-                scrollbarWidth: "none", // Firefox
-                msOverflowStyle: "none" // IE/Edge
-              }}
+              className="w-full max-w-8xl mx-auto my-24"
             >
               <div className="h-full">
-                <ScrollStack>
+                <ScrollStack useWindowScroll={true} itemDistance={180} baseScale={0.92}>
                   {/* 01 */}
                   <ScrollStackItem>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-8 items-start'>
@@ -459,7 +479,7 @@ const AboutComp = () => {
                       </div>
                       <div>
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
-                          Moodboards, Scrappy sketches, Chasing hunches. This is where we go radio silent, only because we&#39;re exploring things that might fail just to see what else shows up. This phase is messy, intuitive, and alive. It&#39;s about letting the idea stretch its legs before it settles into form.
+                            Moodboards, Scrappy sketches, Chasing hunches. This is where we go radio silent, only because we&apos;re exploring things that might fail just to see what else shows up. This phase is messy, intuitive, and alive. It&apos;s about letting the idea stretch its legs before it settles into form.
                         </p>
                         <div className='mt-6 flex flex-wrap gap-3 items-center'>
                           <span className='px-4 py-2 rounded-full bg-green-100 text-green-900 text-sm'>Moodboards</span>
@@ -479,7 +499,7 @@ const AboutComp = () => {
                       </div>
                       <div>
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
-                          The raw gets refined. We craft your brand’s visual and verbal world: type, tone, color, story. Not just what looks good, but what feels true. Every decision earns its place.
+                            The raw gets refined. We craft your brand&apos;s visual and verbal world: type, tone, color, story. Not just what looks good, but what feels true. Every decision earns its place.
                         </p>
                         <div className='mt-6 flex flex-wrap gap-3 items-center'>
                           <span className='px-4 py-2 rounded-full bg-green-100 text-green-900 text-sm'>Brand Identity</span>
@@ -519,7 +539,7 @@ const AboutComp = () => {
                       </div>
                       <div>
                         <p className='text-black text-lg md:text-xl leading-relaxed font-light font-serif tracking-wide'>
-                          Branding isn’t a one-night stand, it’s a long-term relationship. If you want, we stick around. Whether it’s evolving the brand, shaping campaigns, or just giving advice when things get weird, we’re here.
+                          Branding isn&apos;t a one-night stand, it&apos;s a long-term relationship. If you want, we stick around. Whether it&apos;s evolving the brand, shaping campaigns, or just giving advice when things get weird, we&apos;re here.
                         </p>
                         <div className='mt-6 flex flex-wrap gap-3 items-center'>
                           <span className='px-4 py-2 rounded-full bg-green-100 text-green-900 text-sm'>New Beginnings</span>
@@ -530,6 +550,27 @@ const AboutComp = () => {
                 </ScrollStack>
               </div>
             </div>
+
+            {/* Let's work together section */}
+            <div className="w-full max-w-6xl mx-auto my-32 px-8 py-24 rounded-[40px] bg-[#e6f3ff]">
+                <div className="flex flex-col md:flex-row justify-between items-center">
+                    <div className="mb-10 md:mb-0">
+                        <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium text-[#2d6cb5] mb-4">
+                            Let&apos;s work<br />together
+                        </h2>
+                    </div>
+                    <div className="flex flex-col items-start">
+                        <button className="px-8 py-3 bg-black text-white rounded-full text-sm font-medium mb-6 hover:bg-[#2d6cb5] transition-colors duration-300">
+                            Book A Call
+                        </button>
+                        <p className="text-sm text-gray-700">
+                            or reach out to<br />
+                            <a href="mailto:contact.sociallifts@gmail.com" className="font-medium">contact.sociallifts@gmail.com</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
             <style jsx global>{`
                 /* Hide scrollbar for Chrome, Safari and Opera */
                 .hide-scrollbar::-webkit-scrollbar {
@@ -559,4 +600,3 @@ const AboutComp = () => {
 }
 
 export default AboutComp
-// export default AboutComp
